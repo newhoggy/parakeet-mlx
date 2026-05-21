@@ -1085,6 +1085,12 @@ class StreamingParakeet:
             )
 
             self.finalized_tokens.extend(finalized_tokens[0])
+            # Draft tokens sit inside the right-context window of the encoder
+            # and may change as more audio arrives. Mark them so callers (e.g.
+            # live-captioning UIs) can distinguish in-flight text from text
+            # that's already committed past the lookahead boundary.
+            for tok in draft_tokens[0]:
+                tok.revisable = True
             self.draft_tokens = draft_tokens[0]
         elif isinstance(self.model, ParakeetCTC):
             finalized_tokens = self.model.decode(
@@ -1102,6 +1108,8 @@ class StreamingParakeet:
             )
 
             self.finalized_tokens.extend(finalized_tokens[0])
+            for tok in draft_tokens[0]:
+                tok.revisable = True
             self.draft_tokens = draft_tokens[0]
         else:
             raise NotImplementedError("This model does not support real-time decoding")

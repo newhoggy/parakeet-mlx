@@ -11,6 +11,14 @@ class AlignedToken:
     duration: float
     confidence: float = 1.0  # confidence score (0.0 to 1.0)
     end: float = 0.0  # temporary
+    # Streaming-only commit-boundary flag. `False` means the token has moved past
+    # the right-context window inside `StreamingParakeet` (`finalized_tokens`)
+    # and its text/timestamps will be byte-identical on subsequent emissions.
+    # `True` means the token is still inside the right-context window
+    # (`draft_tokens`) and may change as more audio arrives. Non-streaming
+    # callers (`model.transcribe`, `model.generate`) emit fully-finalised tokens
+    # so the field is left at its default `False`.
+    revisable: bool = False
 
     def __post_init__(self) -> None:
         self.end = self.start + self.duration
